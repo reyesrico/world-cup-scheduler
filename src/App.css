@@ -690,6 +690,11 @@
   padding-bottom: 12px;
 }
 
+/* Round selector — shown on phones only (see media query below). */
+.bracket-rounds-nav {
+  display: none;
+}
+
 .bracket {
   display: flex;
   gap: 26px;
@@ -824,6 +829,115 @@
 .third-place-box {
   margin-top: 26px;
   max-width: 280px;
+}
+
+/* ---------- Bracket on phones: one round at a time ---------- */
+@media (max-width: 760px) {
+  .bracket-rounds-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 18px;
+  }
+
+  .bracket-round-chip {
+    position: relative;
+    flex: 1 1 auto;
+    min-width: 56px;
+    font-family: 'Archivo', sans-serif;
+    font-weight: 800;
+    font-size: 13px;
+    letter-spacing: 0.3px;
+    color: var(--wc-muted);
+    background: var(--wc-panel);
+    border: 1px solid var(--wc-line);
+    padding: 10px 6px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+  }
+
+  .bracket-round-chip.active {
+    color: #fff;
+    background: var(--wc-grad);
+    border-color: transparent;
+    box-shadow: 0 6px 16px rgba(255, 45, 120, 0.32);
+  }
+
+  .bracket-round-chip .now-dot {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--wc-green);
+    box-shadow: 0 0 0 2px rgba(37, 208, 122, 0.3);
+  }
+
+  .bracket-wrap {
+    overflow-x: visible;
+  }
+
+  .bracket {
+    flex-direction: column;
+    gap: 0;
+    min-width: 0;
+  }
+
+  /* Show only the selected round, full width. */
+  .bracket-col {
+    display: none;
+    min-width: 0;
+    width: 100%;
+  }
+
+  .bracket-col.is-selected {
+    display: flex;
+  }
+
+  .bracket-col-title {
+    font-size: 18px;
+    padding: 10px;
+    margin-bottom: 14px;
+  }
+
+  .bracket-col-matches {
+    gap: 12px;
+  }
+
+  .bracket-match {
+    padding: 12px;
+    gap: 8px;
+  }
+
+  .bracket-team {
+    padding: 10px 10px;
+  }
+
+  .bteam-name {
+    font-size: 15px;
+  }
+
+  .bteam-score {
+    font-size: 18px;
+    min-width: 20px;
+  }
+
+  .col-Final .bracket-col-matches {
+    justify-content: flex-start;
+  }
+
+  .third-place-box {
+    display: none;
+    margin-top: 0;
+    max-width: none;
+    width: 100%;
+  }
+
+  .third-place-box.is-selected {
+    display: block;
+  }
 }
 
 /* ---------- Import ---------- */
