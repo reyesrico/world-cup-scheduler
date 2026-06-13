@@ -52,7 +52,7 @@ export default function GroupsView({ tournament }: GroupsViewProps) {
                         <td className="pos">{i + 1}</td>
                         <td className="team">
                           <span className="team-flag">{t.flag || '⚽'}</span>
-                          {t.name}
+                          <span className="team-label" title={t.name}>{t.name}</span>
                         </td>
                         <td>{t.played}</td>
                         <td>{t.win}</td>

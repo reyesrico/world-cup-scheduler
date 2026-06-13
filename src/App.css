@@ -533,7 +533,7 @@
 /* ---------- Groups ---------- */
 .groups-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(360px, 100%), 1fr));
   gap: 18px;
 }
 
@@ -582,6 +582,7 @@
   width: 100%;
   border-collapse: collapse;
   font-size: 13px;
+  table-layout: fixed;
 }
 
 .standings th {
@@ -591,10 +592,12 @@
   font-size: 11px;
   padding: 6px 4px;
   border-bottom: 1px solid var(--wc-line);
+  width: 28px;
 }
 
 .standings th.team {
   text-align: left;
+  width: auto;
 }
 
 .standings td {
@@ -610,11 +613,20 @@
   align-items: center;
   gap: 8px;
   white-space: nowrap;
+  min-width: 0;
 }
 
 .standings td.team .team-flag {
   font-size: 18px;
   width: 22px;
+  flex: none;
+}
+
+.standings .team-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
 }
 
 .standings .pos {
@@ -625,6 +637,7 @@
 .standings .pts {
   font-weight: 900;
   color: var(--wc-text);
+  width: 32px;
 }
 
 .standings tr.qualify td {
@@ -960,5 +973,28 @@
   }
   .match-grid {
     grid-template-columns: 1fr;
+  }
+  .standings {
+    font-size: 12px;
+  }
+  .standings th,
+  .standings td {
+    padding: 8px 2px;
+  }
+  .standings th {
+    width: 22px;
+  }
+  .standings .pos {
+    width: 20px;
+  }
+  .standings .pts {
+    width: 26px;
+  }
+  .standings td.team {
+    gap: 6px;
+  }
+  .standings td.team .team-flag {
+    width: 18px;
+    font-size: 15px;
   }
 }
