@@ -1,6 +1,7 @@
 import { formatDateTime } from '../utils/format';
+import type { ResolvedMatch, ResolvedSide, ScoreEntry } from '../types';
 
-const STAGE_BADGE = {
+const STAGE_BADGE: Record<string, string> = {
   'Group Stage': 'group',
   'Round of 32': 'r32',
   'Round of 16': 'r16',
@@ -10,7 +11,15 @@ const STAGE_BADGE = {
   Final: 'final',
 };
 
-function TeamRow({ team, score, isWinner, onScoreChange, scoreName }) {
+interface TeamRowProps {
+  team: ResolvedSide | undefined;
+  score: string | number;
+  isWinner: boolean;
+  onScoreChange: (value: string) => void;
+  scoreName: string;
+}
+
+function TeamRow({ team, score, isWinner, onScoreChange, scoreName }: TeamRowProps) {
   const decided = team?.decided;
   return (
     <div className={`team-row ${isWinner ? 'winner' : ''}`}>
@@ -33,7 +42,14 @@ function TeamRow({ team, score, isWinner, onScoreChange, scoreName }) {
   );
 }
 
-export default function MatchCard({ match, scoreEntry, onChange, timeZone }) {
+interface MatchCardProps {
+  match: ResolvedMatch;
+  scoreEntry?: ScoreEntry;
+  onChange: (id: number, entry: ScoreEntry) => void;
+  timeZone: string;
+}
+
+export default function MatchCard({ match, scoreEntry, onChange, timeZone }: MatchCardProps) {
   const { time, day, date } = formatDateTime(match.start, timeZone);
   const badge = STAGE_BADGE[match.stage] || 'group';
 
@@ -55,7 +71,7 @@ export default function MatchCard({ match, scoreEntry, onChange, timeZone }) {
   const isDraw = sc && sc.home === sc.away;
   const isKnockout = match.stage !== 'Group Stage';
 
-  const update = (field, value) => {
+  const update = (field: keyof ScoreEntry, value: string) => {
     onChange(match.id, { ...scoreEntry, [field]: value });
   };
 

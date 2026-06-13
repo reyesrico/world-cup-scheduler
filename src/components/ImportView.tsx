@@ -1,5 +1,14 @@
 import { useRef, useState } from 'react';
 
+interface ImportViewProps {
+  calendarName: string;
+  customIcsName: string | null;
+  matchCount: number;
+  onImport: (text: string, name: string) => void;
+  onResetCalendar: () => void;
+  onResetScores: () => void;
+}
+
 export default function ImportView({
   calendarName,
   customIcsName,
@@ -7,12 +16,12 @@ export default function ImportView({
   onImport,
   onResetCalendar,
   onResetScores,
-}) {
-  const fileInput = useRef(null);
+}: ImportViewProps) {
+  const fileInput = useRef<HTMLInputElement>(null);
   const [error, setError] = useState('');
   const [dragOver, setDragOver] = useState(false);
 
-  const handleFile = async (file) => {
+  const handleFile = async (file: File | undefined) => {
     setError('');
     if (!file) return;
     if (!/\.ics$/i.test(file.name)) {

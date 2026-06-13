@@ -1,4 +1,10 @@
-export default function GroupsView({ tournament }) {
+import type { Tournament } from '../types';
+
+interface GroupsViewProps {
+  tournament: Tournament;
+}
+
+export default function GroupsView({ tournament }: GroupsViewProps) {
   const { groups, groupLetters, qualifiedThirds } = tournament;
   const qualifiedNames = new Set(qualifiedThirds.map((t) => t.name));
 

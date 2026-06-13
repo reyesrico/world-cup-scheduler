@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { parseIcs } from './utils/parseIcs';
-import { buildTournament } from './utils/standings';
+import { buildTournament, getActiveStage } from './utils/standings';
 import {
   loadScores,
   saveScores,
@@ -10,37 +10,37 @@ import {
   clearScores,
 } from './utils/storage';
 import { getLocalTimeZone } from './utils/format';
-import { getActiveStage } from './utils/standings';
 import ScheduleView from './components/ScheduleView';
 import GroupsView from './components/GroupsView';
 import BracketView from './components/BracketView';
 import ImportView from './components/ImportView';
+import type { ParsedCalendar, ScoreEntry, ScoreMap, Tournament } from './types';
 import './App.css';
 
 const DEFAULT_ICS_URL = `${import.meta.env.BASE_URL}worldcup_2026_all_matches.ics`;
-const TABS = ['Schedule', 'Groups', 'Bracket', 'Import'];
+
+type Tab = 'Schedule' | 'Groups' | 'Bracket' | 'Import';
+const TABS: Tab[] = ['Schedule', 'Groups', 'Bracket', 'Import'];
 
 export default function App() {
-  const [icsText, setIcsText] = useState(null);
-  const [customIcsName, setCustomIcsName] = useState(null);
+  const [icsText, setIcsText] = useState<string | null>(() => loadCustomIcs()?.text ?? null);
+  const [customIcsName, setCustomIcsName] = useState<string | null>(
+    () => loadCustomIcs()?.name ?? null
+  );
   // savedScores = what's persisted in localStorage.
   // draftScores = the live working copy used for emulation; only committed on Save.
-  const [savedScores, setSavedScores] = useState(() => loadScores());
-  const [draftScores, setDraftScores] = useState(() => loadScores());
-  const [tab, setTab] = useState('Schedule');
+  const [savedScores, setSavedScores] = useState<ScoreMap>(() => loadScores());
+  const [draftScores, setDraftScores] = useState<ScoreMap>(() => loadScores());
+  const [tab, setTab] = useState<Tab>('Schedule');
   const [tz, setTz] = useState('UTC');
   const [loadError, setLoadError] = useState('');
 
   const localTz = useMemo(() => getLocalTimeZone(), []);
 
-  // Load the calendar: custom (localStorage) first, otherwise the bundled file.
+  // Fetch the bundled calendar when there's no custom one in localStorage.
+  // (A custom calendar is already loaded via the lazy state initializers.)
   useEffect(() => {
-    const custom = loadCustomIcs();
-    if (custom) {
-      setIcsText(custom.text);
-      setCustomIcsName(custom.name);
-      return;
-    }
+    if (loadCustomIcs()) return;
     fetch(DEFAULT_ICS_URL)
       .then((r) => {
         if (!r.ok) throw new Error('fetch failed');
@@ -50,7 +50,7 @@ export default function App() {
       .catch(() => setLoadError('Could not load the bundled World Cup calendar.'));
   }, []);
 
-  const parsed = useMemo(() => {
+  const parsed = useMemo<ParsedCalendar | null>(() => {
     if (!icsText) return null;
     try {
       return parseIcs(icsText);
@@ -66,7 +66,7 @@ export default function App() {
     }
   }, [parsed]);
 
-  const tournament = useMemo(() => {
+  const tournament = useMemo<Tournament | null>(() => {
     if (!parsed) return null;
     return buildTournament(parsed.matches, draftScores);
   }, [parsed, draftScores]);
@@ -79,7 +79,7 @@ export default function App() {
   // Warn before leaving with unsaved emulation changes.
   useEffect(() => {
     if (!hasUnsavedChanges) return undefined;
-    const handler = (e) => {
+    const handler = (e: BeforeUnloadEvent) => {
       e.preventDefault();
       e.returnValue = '';
     };
@@ -93,10 +93,10 @@ export default function App() {
     [tournament]
   );
 
-  const handleScoreChange = (id, entry) => {
+  const handleScoreChange = (id: number, entry: ScoreEntry) => {
     setDraftScores((prev) => {
       const next = { ...prev };
-      const cleaned = { ...entry };
+      const cleaned: ScoreEntry = { ...entry };
       const empty =
         (cleaned.home === '' || cleaned.home == null) &&
         (cleaned.away === '' || cleaned.away == null) &&
@@ -117,7 +117,7 @@ export default function App() {
     setDraftScores(savedScores);
   };
 
-  const handleImport = (text, name) => {
+  const handleImport = (text: string, name: string) => {
     saveCustomIcs(text, name);
     setIcsText(text);
     setCustomIcsName(name);

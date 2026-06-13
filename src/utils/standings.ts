@@ -2,7 +2,19 @@
 // (Winner Group X, Runner-up Group X, 3rd Group A/B/C..., Winner/Loser Match N)
 // from the scores the user has entered.
 
-// A stored score entry: { home: number, away: number, homePen?: number, awayPen?: number }
+import type {
+  GroupTable,
+  Match,
+  QualifiedThird,
+  ResolvedMatch,
+  ResolvedSide,
+  Score,
+  ScoreEntry,
+  ScoreMap,
+  Side,
+  TeamStanding,
+  Tournament,
+} from '../types';
 
 // Linear stage progression used to decide which stage is "current".
 const PROGRESSION = [
@@ -15,7 +27,7 @@ const PROGRESSION = [
 ];
 
 // True when a resolved match has a decided result.
-export function isMatchComplete(m) {
+export function isMatchComplete(m: ResolvedMatch): boolean {
   const sc = m.score;
   if (!sc) return false;
   if (m.stage === 'Group Stage') return true;
@@ -25,7 +37,7 @@ export function isMatchComplete(m) {
 
 // Returns the first stage that still has undecided matches (the stage in play).
 // If every stage is complete, returns 'Final'.
-export function getActiveStage(resolved) {
+export function getActiveStage(resolved: ResolvedMatch[]): string {
   for (const stage of PROGRESSION) {
     const ms = resolved.filter((m) => m.stage === stage);
     if (ms.length === 0) continue;
@@ -34,9 +46,9 @@ export function getActiveStage(resolved) {
   return 'Final';
 }
 
-function hasScore(entry) {
+function hasScore(entry: ScoreEntry | undefined): boolean {
   return (
-    entry &&
+    !!entry &&
     entry.home !== '' &&
     entry.away !== '' &&
     entry.home != null &&
@@ -46,7 +58,7 @@ function hasScore(entry) {
   );
 }
 
-function getScore(scores, id) {
+function getScore(scores: ScoreMap, id: number): Score | null {
   const entry = scores[id];
   if (!hasScore(entry)) return null;
   return {
@@ -58,20 +70,20 @@ function getScore(scores, id) {
 }
 
 // Builds name -> flag registry from group-stage matches (real teams only).
-function buildFlagRegistry(matches) {
-  const reg = {};
+function buildFlagRegistry(matches: Match[]): Record<string, string> {
+  const reg: Record<string, string> = {};
   for (const m of matches) {
     for (const side of [m.home, m.away]) {
-      if (side.kind === 'team' && side.flag) reg[side.name] = side.flag;
+      if (side.kind === 'team' && side.flag && side.name) reg[side.name] = side.flag;
     }
   }
   return reg;
 }
 
 // Computes a standings table for one group.
-function computeGroupTable(groupMatches, scores) {
-  const teams = {};
-  const ensure = (name, flag) => {
+function computeGroupTable(groupMatches: Match[], scores: ScoreMap): GroupTable {
+  const teams: Record<string, TeamStanding> = {};
+  const ensure = (name: string, flag?: string): TeamStanding => {
     if (!teams[name])
       teams[name] = {
         name,
@@ -92,8 +104,8 @@ function computeGroupTable(groupMatches, scores) {
 
   for (const m of groupMatches) {
     if (m.home.kind !== 'team' || m.away.kind !== 'team') continue;
-    const home = ensure(m.home.name, m.home.flag);
-    const away = ensure(m.away.name, m.away.flag);
+    const home = ensure(m.home.name ?? '', m.home.flag);
+    const away = ensure(m.away.name ?? '', m.away.flag);
     const sc = getScore(scores, m.id);
     if (!sc) {
       allPlayed = false;
@@ -126,26 +138,33 @@ function computeGroupTable(groupMatches, scores) {
   return { table, allPlayed };
 }
 
-function sortTeams(a, b) {
+function sortTeams(a: TeamStanding, b: TeamStanding): number {
   if (b.points !== a.points) return b.points - a.points;
   if (b.gd !== a.gd) return b.gd - a.gd;
   if (b.gf !== a.gf) return b.gf - a.gf;
   return a.name.localeCompare(b.name);
 }
 
+interface ThirdSlot {
+  matchId: number;
+  side: Side;
+  groups: string[];
+}
+
 // Greedy/backtracking assignment of qualified third-placed teams to the
 // R32 slots that accept them (each slot lists the groups it may draw from).
-function assignThirds(slots, thirds) {
-  // slots: [{ matchId, side, groups: ['A','B',...] }]
-  // thirds: [{ ...team, group }] already ranked, top 8.
-  const result = {};
-  const used = new Set();
+function assignThirds(
+  slots: ThirdSlot[],
+  thirds: QualifiedThird[]
+): Record<string, QualifiedThird> {
+  const result: Record<string, QualifiedThird> = {};
+  const used = new Set<string>();
 
   // Order slots by how constrained they are (fewest eligible options first).
-  const eligible = (slot) =>
+  const eligible = (slot: ThirdSlot) =>
     thirds.filter((t) => slot.groups.includes(t.group) && !used.has(t.name));
 
-  function backtrack(remaining) {
+  function backtrack(remaining: ThirdSlot[]): boolean {
     if (remaining.length === 0) return true;
     // Pick the most constrained slot.
     remaining.sort((s1, s2) => eligible(s1).length - eligible(s2).length);
@@ -165,12 +184,14 @@ function assignThirds(slots, thirds) {
   return result;
 }
 
-export function buildTournament(matches, scores) {
+export function buildTournament(matches: Match[], scores: ScoreMap): Tournament {
   const flagReg = buildFlagRegistry(matches);
 
   // --- Group tables ---
-  const groupLetters = [...new Set(matches.filter((m) => m.group).map((m) => m.group))].sort();
-  const groups = {};
+  const groupLetters = [
+    ...new Set(matches.filter((m) => m.group).map((m) => m.group)),
+  ].sort();
+  const groups: Record<string, GroupTable> = {};
   for (const g of groupLetters) {
     const gm = matches.filter((m) => m.group === g);
     groups[g] = computeGroupTable(gm, scores);
@@ -179,24 +200,25 @@ export function buildTournament(matches, scores) {
   const allGroupsDecided = groupLetters.every((g) => groups[g].allPlayed);
 
   // --- Best third-placed teams (only meaningful once all groups decided) ---
-  let qualifiedThirds = [];
+  let qualifiedThirds: QualifiedThird[] = [];
   if (allGroupsDecided) {
-    const thirds = groupLetters
-      .map((g) => {
-        const t = groups[g].table[2];
-        return t ? { ...t, group: g } : null;
-      })
-      .filter(Boolean);
+    const thirds: QualifiedThird[] = [];
+    for (const g of groupLetters) {
+      const t = groups[g].table[2];
+      if (t) thirds.push({ ...t, group: g });
+    }
     thirds.sort(sortTeams);
     qualifiedThirds = thirds.slice(0, 8);
   }
 
   // --- Resolve every match's two sides ---
   // resolveSide returns { name, flag, label, decided }
-  const memo = {};
-  const visiting = new Set(); // guards against cyclic / self references in data
+  const memo: Record<string, ResolvedSide> = {};
+  const visiting = new Set<number>(); // guards against cyclic / self references in data
 
-  function matchOutcome(matchId) {
+  function matchOutcome(
+    matchId: number
+  ): { winner: ResolvedSide; loser: ResolvedSide } | null {
     if (visiting.has(matchId)) return null;
     const m = matches.find((x) => x.id === matchId);
     if (!m) return null;
@@ -207,7 +229,8 @@ export function buildTournament(matches, scores) {
     if (!home.decided || !away.decided) return null;
     const sc = getScore(scores, matchId);
     if (!sc) return null;
-    let winner, loser;
+    let winner: ResolvedSide;
+    let loser: ResolvedSide;
     if (sc.home > sc.away) {
       winner = home;
       loser = away;
@@ -229,17 +252,18 @@ export function buildTournament(matches, scores) {
     return { winner, loser };
   }
 
-  function resolveSide(match, side) {
+  function resolveSide(match: Match, side: Side): ResolvedSide {
     const cacheKey = `${match.id}:${side}`;
     if (memo[cacheKey]) return memo[cacheKey];
 
     const slot = match[side];
-    let res;
+    let res: ResolvedSide;
 
     if (slot.kind === 'team') {
-      res = { name: slot.name, flag: slot.flag, label: slot.name, decided: true };
+      const name = slot.name ?? slot.label;
+      res = { name, flag: slot.flag, label: name, decided: true };
     } else if (slot.kind === 'winnerGroup' || slot.kind === 'runnerGroup') {
-      const g = groups[slot.group];
+      const g = slot.group ? groups[slot.group] : undefined;
       const idx = slot.kind === 'winnerGroup' ? 0 : 1;
       if (g && g.allPlayed && g.table[idx]) {
         const t = g.table[idx];
@@ -251,7 +275,7 @@ export function buildTournament(matches, scores) {
       res = { name: slot.label, flag: slot.flag, label: slot.label, decided: false };
       // Filled later via the global thirds assignment.
     } else if (slot.kind === 'winnerMatch' || slot.kind === 'loserMatch') {
-      const outcome = matchOutcome(slot.match);
+      const outcome = slot.match != null ? matchOutcome(slot.match) : null;
       if (outcome) {
         const t = slot.kind === 'winnerMatch' ? outcome.winner : outcome.loser;
         res = { name: t.name, flag: t.flag || flagReg[t.name] || '', label: t.name, decided: true };
@@ -274,16 +298,16 @@ export function buildTournament(matches, scores) {
 
   // Assign thirds to their R32 slots.
   if (allGroupsDecided && qualifiedThirds.length === 8) {
-    const slots = [];
+    const slots: ThirdSlot[] = [];
     for (const m of matches) {
-      for (const side of ['home', 'away']) {
+      for (const side of ['home', 'away'] as const) {
         if (m[side].kind === 'thirdPlace')
-          slots.push({ matchId: m.id, side, groups: m[side].groups });
+          slots.push({ matchId: m.id, side, groups: m[side].groups ?? [] });
       }
     }
     const assigned = assignThirds(slots, qualifiedThirds);
     for (const m of matches) {
-      for (const side of ['home', 'away']) {
+      for (const side of ['home', 'away'] as const) {
         if (m[side].kind === 'thirdPlace') {
           const t = assigned[`${m.id}:${side}`];
           if (t) {
@@ -304,12 +328,12 @@ export function buildTournament(matches, scores) {
   for (let pass = 0; pass < 6; pass++) {
     let changed = false;
     for (const m of matches) {
-      for (const side of ['home', 'away']) {
+      for (const side of ['home', 'away'] as const) {
         const slot = m[side];
         if (slot.kind === 'winnerMatch' || slot.kind === 'loserMatch') {
           const prev = memo[`${m.id}:${side}`];
           if (prev && prev.decided) continue;
-          const outcome = matchOutcome(slot.match);
+          const outcome = slot.match != null ? matchOutcome(slot.match) : null;
           if (outcome) {
             const t = slot.kind === 'winnerMatch' ? outcome.winner : outcome.loser;
             memo[`${m.id}:${side}`] = {
@@ -326,7 +350,7 @@ export function buildTournament(matches, scores) {
     if (!changed) break;
   }
 
-  const resolved = matches.map((m) => ({
+  const resolved: ResolvedMatch[] = matches.map((m) => ({
     ...m,
     resolvedHome: memo[`${m.id}:home`],
     resolvedAway: memo[`${m.id}:away`],

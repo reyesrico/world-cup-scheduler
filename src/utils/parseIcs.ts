@@ -11,12 +11,14 @@
 // "Winner Group C", "Runner-up Group F", "3rd Group A/B/C/D/F",
 // "Winner Match 73", "Loser Match 101".
 
+import type { Match, ParsedCalendar, TeamSlot } from '../types';
+
 // Strips a leading emoji cluster (regional-indicator flags, ⚽, tag-sequence
 // flags like Scotland, waving flags, etc.) and returns { flag, name }.
 const EMOJI_PREFIX =
   /^(?:[\u{1F1E6}-\u{1F1FF}]{2}|\u{1F3F4}[\u{E0061}-\u{E007F}]+|[\u{2600}-\u{27BF}\u{1F000}-\u{1FAFF}][\uFE0F\u200D]?|\uFE0F)+\s*/u;
 
-function splitFlag(raw) {
+function splitFlag(raw: string): { flag: string; name: string } {
   const s = (raw || '').trim();
   const match = s.match(EMOJI_PREFIX);
   if (!match) return { flag: '', name: s };
@@ -24,10 +26,10 @@ function splitFlag(raw) {
 }
 
 // Classifies a team string into a real team or a bracket placeholder.
-export function classifyTeam(rawName) {
+export function classifyTeam(rawName: string): TeamSlot {
   const { flag, name } = splitFlag(rawName);
 
-  let m;
+  let m: RegExpMatchArray | null;
   if ((m = name.match(/^Winner Group ([A-L])$/i)))
     return { kind: 'winnerGroup', group: m[1].toUpperCase(), flag, label: name };
   if ((m = name.match(/^Runner-?up Group ([A-L])$/i)))
@@ -50,7 +52,7 @@ export function classifyTeam(rawName) {
 }
 
 // Parses an ICS datetime in UTC (e.g. 20260629T170000Z) into a Date.
-function parseIcsDate(value) {
+function parseIcsDate(value: string | undefined): Date | null {
   const m = (value || '').match(
     /^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})Z?$/
   );
@@ -60,9 +62,9 @@ function parseIcsDate(value) {
 }
 
 // Unfolds ICS line folding: continuation lines start with a space or tab.
-function unfoldLines(text) {
+function unfoldLines(text: string): string[] {
   const rawLines = text.replace(/\r\n/g, '\n').split('\n');
-  const lines = [];
+  const lines: string[] = [];
   for (const line of rawLines) {
     if ((line.startsWith(' ') || line.startsWith('\t')) && lines.length) {
       lines[lines.length - 1] += line.slice(1);
@@ -73,7 +75,7 @@ function unfoldLines(text) {
   return lines;
 }
 
-function getDescField(description, key) {
+function getDescField(description: string, key: string): string {
   // DESCRIPTION uses literal "\n" separators between fields.
   const parts = (description || '').split(/\\n|\n/);
   for (const part of parts) {
@@ -83,12 +85,14 @@ function getDescField(description, key) {
   return '';
 }
 
-export function parseIcs(text) {
+type IcsEvent = Record<string, string>;
+
+export function parseIcs(text: string): ParsedCalendar {
   const lines = unfoldLines(text);
 
   let calendarName = 'FIFA World Cup';
-  const events = [];
-  let current = null;
+  const events: IcsEvent[] = [];
+  let current: IcsEvent | null = null;
 
   for (const line of lines) {
     const sep = line.indexOf(':');
@@ -108,7 +112,7 @@ export function parseIcs(text) {
     }
   }
 
-  const matches = events.map((ev, index) => {
+  const matches: Match[] = events.map((ev, index) => {
     const uid = ev.UID || '';
     const idMatch = uid.match(/match_\w+?_(\d+)_/);
     const id = idMatch ? Number(idMatch[1]) : index;
@@ -133,8 +137,8 @@ export function parseIcs(text) {
       stadium: (stadium || '').trim(),
       city: cityParts.join(',').trim(),
       location,
-      home: classifyTeam(homeRaw),
-      away: classifyTeam(awayRaw),
+      home: classifyTeam(homeRaw || ''),
+      away: classifyTeam(awayRaw || ''),
       summary,
     };
   });
@@ -153,7 +157,11 @@ export function parseIcs(text) {
 
 // Derives the tournament year from the calendar name, the event UIDs, or the
 // match dates (in that order) so the branding adapts to any imported calendar.
-function detectYear(calendarName, events, matches) {
+function detectYear(
+  calendarName: string,
+  events: IcsEvent[],
+  matches: Match[]
+): number | null {
   const fromName = (calendarName || '').match(/\b(19|20)\d{2}\b/);
   if (fromName) return Number(fromName[0]);
 
@@ -163,7 +171,7 @@ function detectYear(calendarName, events, matches) {
   }
 
   // Most common year across match start dates.
-  const counts = {};
+  const counts: Record<number, number> = {};
   for (const mt of matches) {
     if (mt.start) {
       const y = mt.start.getUTCFullYear();
@@ -184,7 +192,7 @@ export const STAGE_ORDER = [
   'Final',
 ];
 
-export function stageRank(stage) {
+export function stageRank(stage: string): number {
   const i = STAGE_ORDER.indexOf(stage);
   return i === -1 ? 99 : i;
 }

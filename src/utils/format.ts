@@ -1,8 +1,17 @@
 // Date / time formatting helpers.
 
-export function formatDateTime(date, timeZone) {
+export interface FormattedDateTime {
+  date: string;
+  time: string;
+  day: string;
+}
+
+export function formatDateTime(
+  date: Date | null,
+  timeZone?: string
+): FormattedDateTime {
   if (!date) return { date: 'TBD', time: '', day: '' };
-  const opts = timeZone ? { timeZone } : { timeZone: 'UTC' };
+  const opts: Intl.DateTimeFormatOptions = timeZone ? { timeZone } : { timeZone: 'UTC' };
   const day = new Intl.DateTimeFormat('en-US', {
     weekday: 'short',
     ...opts,
@@ -21,7 +30,7 @@ export function formatDateTime(date, timeZone) {
   return { date: dateStr, time, day };
 }
 
-export function dateKey(date, timeZone) {
+export function dateKey(date: Date | null, timeZone?: string): string {
   if (!date) return 'TBD';
   return new Intl.DateTimeFormat('en-CA', {
     year: 'numeric',
@@ -31,7 +40,7 @@ export function dateKey(date, timeZone) {
   }).format(date);
 }
 
-export function formatDayHeading(date, timeZone) {
+export function formatDayHeading(date: Date | null, timeZone?: string): string {
   if (!date) return 'Date To Be Determined';
   return new Intl.DateTimeFormat('en-US', {
     weekday: 'long',
@@ -42,7 +51,7 @@ export function formatDayHeading(date, timeZone) {
   }).format(date);
 }
 
-export function getLocalTimeZone() {
+export function getLocalTimeZone(): string {
   try {
     return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
   } catch {

@@ -1,4 +1,5 @@
 import { formatDateTime } from '../utils/format';
+import type { ResolvedMatch, ResolvedSide } from '../types';
 
 const ROUNDS = [
   { key: 'Round of 32', label: 'Round of 32' },
@@ -8,7 +9,13 @@ const ROUNDS = [
   { key: 'Final', label: 'Final' },
 ];
 
-function BracketTeam({ team, score, isWinner }) {
+interface BracketTeamProps {
+  team: ResolvedSide | undefined;
+  score: number | null | undefined;
+  isWinner: boolean;
+}
+
+function BracketTeam({ team, score, isWinner }: BracketTeamProps) {
   return (
     <div className={`bracket-team ${isWinner ? 'winner' : ''}`}>
       <span className={`bteam-flag ${team?.decided ? '' : 'placeholder'}`}>
@@ -22,7 +29,12 @@ function BracketTeam({ team, score, isWinner }) {
   );
 }
 
-function BracketMatch({ match, timeZone }) {
+interface BracketMatchProps {
+  match: ResolvedMatch;
+  timeZone: string;
+}
+
+function BracketMatch({ match, timeZone }: BracketMatchProps) {
   const sc = match.score;
   let homeWin = false;
   let awayWin = false;
@@ -52,7 +64,13 @@ function BracketMatch({ match, timeZone }) {
   );
 }
 
-export default function BracketView({ matches, timeZone, activeStage }) {
+interface BracketViewProps {
+  matches: ResolvedMatch[];
+  timeZone: string;
+  activeStage: string;
+}
+
+export default function BracketView({ matches, timeZone, activeStage }: BracketViewProps) {
   const thirdPlace = matches.find((m) => m.stage === 'Third Place');
 
   return (
