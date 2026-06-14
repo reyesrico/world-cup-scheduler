@@ -89,7 +89,7 @@ export default function App() {
   const [savedScores, setSavedScores] = useState<ScoreMap>(() => loadScores());
   const [draftScores, setDraftScores] = useState<ScoreMap>(() => loadScores());
   const [tab, setTab] = useState<Tab>('Schedule');
-  const [tz, setTz] = useState('UTC');
+  const [tz, setTz] = useState(() => getLocalTimeZone());
   const [loadError, setLoadError] = useState('');
 
   // Live (real) results pulled from the public scoreboard API.
