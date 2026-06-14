@@ -97,7 +97,11 @@ export default function App() {
   const [pendingLive, setPendingLive] = useState<LiveScoreMap | null>(null);
   const [toast, setToast] = useState('');
   // First-run welcome and whether the user opted in to real-score fetching.
-  const [welcomeSeen, setWelcomeSeen] = useState<boolean>(() => loadWelcomeSeen());
+  // Anyone who already has saved scores is treated as a returning user, so the
+  // welcome only appears for genuinely first-time visitors.
+  const [welcomeSeen, setWelcomeSeen] = useState<boolean>(
+    () => loadWelcomeSeen() || Object.keys(loadScores()).length > 0
+  );
   const [liveEnabled, setLiveEnabled] = useState<boolean>(() => loadLiveEnabled());
   // Remembers the signature of a live snapshot the user already declined, so
   // we don't keep re-prompting with the same data on every focus.

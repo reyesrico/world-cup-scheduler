@@ -9,12 +9,13 @@ import {
   type ReactNode,
 } from 'react';
 
-export type Lang = 'en' | 'es' | 'pt';
+export type Lang = 'en' | 'es' | 'pt' | 'fr';
 
 export const LANGS: { code: Lang; label: string; name: string }[] = [
   { code: 'en', label: 'EN', name: 'English' },
   { code: 'es', label: 'ES', name: 'Español' },
   { code: 'pt', label: 'PT', name: 'Português' },
+  { code: 'fr', label: 'FR', name: 'Français' },
 ];
 
 const LANG_KEY = 'wc_lang_v1';
@@ -25,8 +26,17 @@ const LATAM_ES = new Set([
   'HN', 'MX', 'NI', 'PA', 'PY', 'PE', 'PR', 'UY', 'VE',
 ]);
 
+// Regions whose main / primary official language is French (France, Monaco,
+// French-speaking Africa, Haiti and the French overseas territories).
+const FR_REGIONS = new Set([
+  'FR', 'MC', 'HT', 'CI', 'SN', 'ML', 'BF', 'NE', 'GN', 'TG', 'BJ',
+  'GA', 'CG', 'CD', 'TD', 'CF', 'CM', 'DJ', 'KM', 'MG',
+  'MQ', 'GP', 'RE', 'GF', 'YT', 'NC', 'PF', 'WF', 'BL', 'MF', 'PM',
+]);
+
 // Guess the best starting language from the browser's region / locale list:
-// Brazil or Portugal → Portuguese, Latin America (or Spain) → Spanish, else English.
+// Brazil/Portugal → Portuguese, French-speaking → French, Latin America (or
+// Spain) → Spanish, otherwise English.
 export function detectLang(): Lang {
   try {
     const list =
@@ -38,6 +48,7 @@ export function detectLang(): Lang {
       const lang = loc.slice(0, 2);
       const region = loc.split('-')[1]?.toUpperCase();
       if (lang === 'pt' || region === 'BR' || region === 'PT') return 'pt';
+      if (lang === 'fr' || (region && FR_REGIONS.has(region))) return 'fr';
       if (lang === 'es' || (region && LATAM_ES.has(region))) return 'es';
     }
   } catch {
@@ -49,7 +60,7 @@ export function detectLang(): Lang {
 function loadLang(): Lang {
   try {
     const v = localStorage.getItem(LANG_KEY);
-    if (v === 'en' || v === 'es' || v === 'pt') return v;
+    if (v === 'en' || v === 'es' || v === 'pt' || v === 'fr') return v;
   } catch {
     /* ignore */
   }
@@ -347,6 +358,105 @@ const pt: Dict = {
   'lang.label': 'Idioma',
 };
 
+const fr: Dict = {
+  'subtitle': 'Pronostiquez le tableau · saisissez les scores · suivez le tournoi',
+  'brand.fallback': 'Coupe du Monde de la FIFA',
+
+  'tab.Schedule': 'Calendrier',
+  'tab.Groups': 'Groupes',
+  'tab.Bracket': 'Élimination',
+  'tab.Import': 'Importer',
+
+  'tz.utc': 'UTC',
+  'tz.local': 'Local',
+
+  'save.revert': 'Annuler',
+  'save.revertTitle': 'Annuler les modifications non enregistrées',
+  'save.save': 'Enregistrer les scores',
+  'save.saved': '{n} enregistrés',
+  'save.savedTitle': 'Vos pronostics enregistrés sont stockés dans ce navigateur',
+  'save.unsavedBadge': 'Modifications non enregistrées',
+
+  'footer.times.utc': 'Heures affichées en UTC.',
+  'footer.times.local': 'Heures affichées à l’heure locale ({tz}).',
+  'footer.unsaved':
+    ' Vous avez des modifications non enregistrées — cliquez sur Enregistrer les scores pour les conserver.',
+  'footer.saved': ' Les scores sont enregistrés localement dans votre navigateur.',
+
+  'common.loading': 'Chargement du calendrier…',
+  'common.tbd': 'À définir',
+  'common.all': 'Tous',
+  'error.load': 'Impossible de charger le calendrier de la Coupe du Monde inclus.',
+  'error.reload': 'Impossible de recharger le calendrier inclus.',
+
+  'sched.stage': 'Phase',
+  'sched.group': 'Groupe',
+  'sched.search': 'Rechercher',
+  'sched.searchPlaceholder': 'Équipe, stade ou ville…',
+  'sched.groupName': 'Groupe {g}',
+  'sched.matches': '{n} matchs',
+  'sched.none': 'Aucun match ne correspond à ces filtres.',
+  'sched.today': 'Aujourd’hui',
+  'sched.jumpToday': 'Aller à aujourd’hui',
+  'sched.noToday': 'Aucun match aujourd’hui',
+
+  'match.penalties': 'Tirs au but',
+
+  'groups.decided': 'Décidé',
+  'groups.inProgress': 'En cours',
+  'groups.advance': 'Qualifiés (1er et 2e)',
+  'groups.bestThird': 'Meilleur troisième',
+
+  'bracket.now': 'En cours',
+  'bracket.thirdPlayoff': 'Match pour la troisième place',
+
+  'import.title': 'Importer un calendrier',
+  'import.desc':
+    'Chargez n’importe quel fichier .ics au format FIFA pour construire le calendrier. Utilisez-le pour préparer un futur tournoi : exportez les matchs en ICS et déposez-le ici. Vos scores sont conservés séparément et restent dans ce navigateur.',
+  'import.dropStrong': 'Glissez-déposez',
+  'import.dropRest': 'un fichier .ics ici',
+  'import.browse': 'ou cliquez pour parcourir',
+  'import.badFile': 'Veuillez choisir un fichier de calendrier .ics.',
+  'import.readErr': 'Impossible de lire ce fichier.',
+  'import.current': 'Calendrier actuel',
+  'import.loaded': '{n} matchs chargés',
+  'import.custom': 'Personnalisé : {name}',
+  'import.restore': 'Restaurer le calendrier de la Coupe du Monde 2026',
+  'import.clearScores': 'Effacer tous les scores',
+  'import.confirmClear': 'Effacer tous les scores saisis ? Cette action est irréversible.',
+
+  'refresh.button': 'Scores réels',
+  'refresh.checking': 'Vérification…',
+  'refresh.title': 'Mettre à jour avec les résultats réels ?',
+  'refresh.body':
+    'Nous avons trouvé {n} résultat(s) réel(s) différent(s) des vôtres. Mettre à jour ces matchs avec les scores officiels ? Vos autres pronostics restent intacts, et vous pouvez toujours modifier et enregistrer ce que vous voulez.',
+  'refresh.use': 'Utiliser les données réelles',
+  'refresh.keep': 'Garder les miens',
+  'refresh.none': 'Aucun nouveau résultat réel pour le moment.',
+  'refresh.error': 'Impossible de joindre le service de scores en direct.',
+  'refresh.applied': '{n} match(s) mis à jour avec les scores réels.',
+
+  'welcome.title': 'Bienvenue sur le suivi de la Coupe du Monde',
+  'welcome.intro':
+    'Pronostiquez chaque match, suivez les classements des groupes et le tableau final et — si vous le souhaitez — récupérez les résultats réels en temps réel. Tout reste dans ce navigateur.',
+  'welcome.langQ': 'Choisissez votre langue',
+  'welcome.dataQ': 'Utiliser les résultats réels ?',
+  'welcome.dataDesc':
+    'Nous pouvons récupérer les scores officiels depuis une source publique et proposer de remplir les matchs déjà joués. Vous pouvez toujours modifier et enregistrer vos propres pronostics.',
+  'welcome.dataYes': 'Oui, récupérer les scores réels',
+  'welcome.dataNo': 'Non, seulement mes pronostics',
+  'welcome.how.title': 'Comment ça marche',
+  'welcome.how.schedule': 'Calendrier — touchez un match pour saisir un score et simuler des résultats.',
+  'welcome.how.groups': 'Groupes — les classements se mettent à jour en direct au fur et à mesure.',
+  'welcome.how.bracket':
+    'Élimination — les tours à élimination directe se construisent à partir de vos résultats de groupe.',
+  'welcome.how.save':
+    'Enregistrer les scores — vos pronostics restent dans ce navigateur ; cliquez sur Enregistrer pour les conserver.',
+  'welcome.start': 'Commencer',
+
+  'lang.label': 'Langue',
+};
+
 // Stage / round names shared by Schedule, Groups and Bracket.
 const STAGE_NAMES: Record<Lang, Dict> = {
   en: {
@@ -376,9 +486,18 @@ const STAGE_NAMES: Record<Lang, Dict> = {
     'Third Place': 'Terceiro lugar',
     Final: 'Final',
   },
+  fr: {
+    'Group Stage': 'Phase de groupes',
+    'Round of 32': '16es de finale',
+    'Round of 16': '8es de finale',
+    Quarterfinal: 'Quarts de finale',
+    Semifinal: 'Demi-finales',
+    'Third Place': 'Troisième place',
+    Final: 'Finale',
+  },
 };
 
-const DICTS: Record<Lang, Dict> = { en, es, pt };
+const DICTS: Record<Lang, Dict> = { en, es, pt, fr };
 
 function interpolate(template: string, vars?: Record<string, string | number>): string {
   if (!vars) return template;
@@ -399,6 +518,7 @@ const LOCALES: Record<Lang, string> = {
   en: 'en-US',
   es: 'es-ES',
   pt: 'pt-BR',
+  fr: 'fr-FR',
 };
 
 const I18nContext = createContext<I18n | null>(null);

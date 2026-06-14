@@ -1402,8 +1402,8 @@
 
 .welcome-lang,
 .welcome-opt {
-  flex: 1 1 auto;
-  min-width: 130px;
+  flex: 1 1 0;
+  min-width: 0;
   padding: 10px 14px;
   border-radius: 10px;
   border: 1px solid var(--wc-line);
@@ -1411,6 +1411,7 @@
   color: var(--wc-text);
   font-weight: 600;
   font-size: 14px;
+  text-align: center;
   cursor: pointer;
   transition: border-color 0.15s, background 0.15s, color 0.15s;
 }
