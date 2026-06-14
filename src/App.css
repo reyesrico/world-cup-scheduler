@@ -298,6 +298,7 @@
 /* ---------- Day sections ---------- */
 .day-section {
   margin-bottom: 34px;
+  scroll-margin-top: 84px;
 }
 
 .day-heading {
@@ -1110,5 +1111,252 @@
   .standings td.team .team-flag {
     width: 18px;
     font-size: 15px;
+  }
+}
+
+/* ---------- Language toggle ---------- */
+.lang-toggle {
+  display: inline-flex;
+  background: var(--wc-panel);
+  border: 1px solid var(--wc-line);
+  border-radius: 999px;
+  padding: 3px;
+}
+
+.lang-toggle button {
+  border: 0;
+  background: transparent;
+  color: var(--wc-muted);
+  padding: 7px 11px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-weight: 800;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  transition: all 0.15s;
+}
+
+.lang-toggle button.active {
+  background: var(--wc-grad);
+  color: #fff;
+}
+
+/* ---------- Refresh (real scores) button ---------- */
+.btn-refresh {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid var(--wc-line);
+  background: var(--wc-panel);
+  color: var(--wc-text);
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-weight: 800;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-refresh:hover:not(:disabled) {
+  border-color: var(--wc-blue);
+}
+
+.btn-refresh:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.refresh-icon {
+  font-size: 15px;
+  line-height: 1;
+  display: inline-block;
+}
+
+.refresh-icon.spin {
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ---------- "Today" markers ---------- */
+.today-chip {
+  background: rgba(37, 208, 122, 0.16) !important;
+  color: var(--wc-green) !important;
+  border: 1px solid rgba(37, 208, 122, 0.45) !important;
+  font-weight: 800;
+}
+
+.today-chip:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.day-section.is-today .day-heading {
+  border-bottom-color: var(--wc-green);
+}
+
+.today-tag {
+  font-family: 'Archivo', sans-serif;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: #04130b;
+  background: var(--wc-green);
+  padding: 3px 9px;
+  border-radius: 999px;
+  margin-right: 10px;
+}
+
+/* ---------- Floating save bar ---------- */
+.save-fab {
+  position: fixed;
+  left: 50%;
+  bottom: 18px;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: var(--wc-panel);
+  border: 1px solid var(--wc-line);
+  border-radius: 999px;
+  box-shadow: 0 10px 34px rgba(0, 0, 0, 0.45);
+  z-index: 60;
+  backdrop-filter: blur(10px);
+  animation: fabIn 0.25s ease;
+}
+
+@keyframes fabIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 12px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+.save-fab-label {
+  font-size: 12.5px;
+  font-weight: 800;
+  color: var(--wc-muted);
+  padding-left: 4px;
+}
+
+/* ---------- Toast ---------- */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 84px;
+  transform: translateX(-50%);
+  background: var(--wc-text);
+  color: var(--wc-bg, #11131a);
+  padding: 11px 18px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 13px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  z-index: 70;
+  max-width: min(92vw, 460px);
+  text-align: center;
+  animation: fabIn 0.25s ease;
+}
+
+/* ---------- Modal ---------- */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(4, 6, 12, 0.66);
+  backdrop-filter: blur(3px);
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  z-index: 100;
+  animation: fadeIn 0.18s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.modal-card {
+  background: var(--wc-panel);
+  border: 1px solid var(--wc-line);
+  border-radius: 18px;
+  padding: 24px;
+  max-width: 440px;
+  width: 100%;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+}
+
+.modal-card h2 {
+  font-family: 'Anton', sans-serif;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 22px;
+  margin: 0 0 12px;
+}
+
+.modal-card p {
+  margin: 0 0 20px;
+  color: var(--wc-muted);
+  line-height: 1.5;
+  font-size: 14px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.btn.primary {
+  background: var(--wc-grad-warm);
+  color: #2a1300;
+}
+
+.btn.primary:hover {
+  filter: brightness(1.05);
+}
+
+@media (max-width: 560px) {
+  .topbar-right {
+    flex-wrap: wrap;
+    width: 100%;
+  }
+  .save-fab {
+    left: 12px;
+    right: 12px;
+    transform: none;
+    justify-content: space-between;
+    width: auto;
+  }
+  @keyframes fabIn {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  .modal-actions {
+    flex-direction: column-reverse;
+  }
+  .modal-actions .btn {
+    width: 100%;
   }
 }

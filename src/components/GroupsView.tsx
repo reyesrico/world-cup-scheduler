@@ -1,3 +1,4 @@
+import { useI18n } from '../i18n';
 import type { Tournament } from '../types';
 
 interface GroupsViewProps {
@@ -5,8 +6,9 @@ interface GroupsViewProps {
 }
 
 export default function GroupsView({ tournament }: GroupsViewProps) {
+  const { t } = useI18n();
   const { groups, groupLetters, qualifiedThirds } = tournament;
-  const qualifiedNames = new Set(qualifiedThirds.map((t) => t.name));
+  const qualifiedNames = new Set(qualifiedThirds.map((q) => q.name));
 
   return (
     <div className="groups">
@@ -16,11 +18,11 @@ export default function GroupsView({ tournament }: GroupsViewProps) {
           return (
             <div key={g} className="group-card">
               <div className="group-head">
-                <h3>Group {g}</h3>
+                <h3>{t('sched.groupName', { g })}</h3>
                 {allPlayed ? (
-                  <span className="group-status done">Decided</span>
+                  <span className="group-status done">{t('groups.decided')}</span>
                 ) : (
-                  <span className="group-status">In progress</span>
+                  <span className="group-status">{t('groups.inProgress')}</span>
                 )}
               </div>
               <table className="standings">
@@ -73,8 +75,8 @@ export default function GroupsView({ tournament }: GroupsViewProps) {
       </div>
 
       <div className="legend">
-        <span><i className="dot qualify" /> Advance (1st &amp; 2nd)</span>
-        <span><i className="dot third" /> Best third place</span>
+        <span><i className="dot qualify" /> {t('groups.advance')}</span>
+        <span><i className="dot third" /> {t('groups.bestThird')}</span>
       </div>
     </div>
   );

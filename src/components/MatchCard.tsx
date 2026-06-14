@@ -1,4 +1,5 @@
 import { formatDateTime } from '../utils/format';
+import { useI18n } from '../i18n';
 import type { ResolvedMatch, ResolvedSide, ScoreEntry } from '../types';
 
 const STAGE_BADGE: Record<string, string> = {
@@ -50,7 +51,8 @@ interface MatchCardProps {
 }
 
 export default function MatchCard({ match, scoreEntry, onChange, timeZone }: MatchCardProps) {
-  const { time, day, date } = formatDateTime(match.start, timeZone);
+  const { t, stage, locale } = useI18n();
+  const { time, day, date } = formatDateTime(match.start, timeZone, locale);
   const badge = STAGE_BADGE[match.stage] || 'group';
 
   const home = match.resolvedHome;
@@ -79,7 +81,7 @@ export default function MatchCard({ match, scoreEntry, onChange, timeZone }: Mat
     <div className="match-card">
       <div className="match-meta">
         <span className={`stage-badge ${badge}`}>
-          {match.group ? `Group ${match.group}` : match.stage}
+          {match.group ? t('sched.groupName', { g: match.group }) : stage(match.stage)}
         </span>
         <span className="match-num">#{match.id + 1}</span>
       </div>
@@ -103,7 +105,7 @@ export default function MatchCard({ match, scoreEntry, onChange, timeZone }: Mat
 
       {isKnockout && isDraw && (
         <div className="pens">
-          <span className="pens-label">Penalties</span>
+          <span className="pens-label">{t('match.penalties')}</span>
           <input
             className="pen-input"
             type="number"

@@ -8,20 +8,21 @@ export interface FormattedDateTime {
 
 export function formatDateTime(
   date: Date | null,
-  timeZone?: string
+  timeZone?: string,
+  locale = 'en-US'
 ): FormattedDateTime {
   if (!date) return { date: 'TBD', time: '', day: '' };
   const opts: Intl.DateTimeFormatOptions = timeZone ? { timeZone } : { timeZone: 'UTC' };
-  const day = new Intl.DateTimeFormat('en-US', {
+  const day = new Intl.DateTimeFormat(locale, {
     weekday: 'short',
     ...opts,
   }).format(date);
-  const dateStr = new Intl.DateTimeFormat('en-US', {
+  const dateStr = new Intl.DateTimeFormat(locale, {
     month: 'short',
     day: 'numeric',
     ...opts,
   }).format(date);
-  const time = new Intl.DateTimeFormat('en-US', {
+  const time = new Intl.DateTimeFormat(locale, {
     hour: '2-digit',
     minute: '2-digit',
     hour12: false,
@@ -40,9 +41,13 @@ export function dateKey(date: Date | null, timeZone?: string): string {
   }).format(date);
 }
 
-export function formatDayHeading(date: Date | null, timeZone?: string): string {
+export function formatDayHeading(
+  date: Date | null,
+  timeZone?: string,
+  locale = 'en-US'
+): string {
   if (!date) return 'Date To Be Determined';
-  return new Intl.DateTimeFormat('en-US', {
+  return new Intl.DateTimeFormat(locale, {
     weekday: 'long',
     month: 'long',
     day: 'numeric',
@@ -57,4 +62,15 @@ export function getLocalTimeZone(): string {
   } catch {
     return 'UTC';
   }
+}
+
+// The local "today" rendered in the same date-key form as a match, so we can
+// compare a match against the current day in the chosen time zone.
+export function todayKey(timeZone?: string): string {
+  return dateKey(new Date(), timeZone);
+}
+
+export function isSameDay(date: Date | null, timeZone: string | undefined, key: string): boolean {
+  if (!date) return false;
+  return dateKey(date, timeZone) === key;
 }

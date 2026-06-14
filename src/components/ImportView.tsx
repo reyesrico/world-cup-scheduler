@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react';
+import { useI18n } from '../i18n';
 
 interface ImportViewProps {
   calendarName: string;
@@ -17,6 +18,7 @@ export default function ImportView({
   onResetCalendar,
   onResetScores,
 }: ImportViewProps) {
+  const { t } = useI18n();
   const fileInput = useRef<HTMLInputElement>(null);
   const [error, setError] = useState('');
   const [dragOver, setDragOver] = useState(false);
@@ -25,27 +27,22 @@ export default function ImportView({
     setError('');
     if (!file) return;
     if (!/\.ics$/i.test(file.name)) {
-      setError('Please choose a .ics calendar file.');
+      setError(t('import.badFile'));
       return;
     }
     try {
       const text = await file.text();
       onImport(text, file.name);
     } catch {
-      setError('Could not read that file.');
+      setError(t('import.readErr'));
     }
   };
 
   return (
     <div className="import-view">
       <div className="import-card">
-        <h2>Import a calendar</h2>
-        <p className="muted">
-          Load any FIFA-style <code>.ics</code> file to build the schedule. Use
-          this to set up a future tournament — just export the matches as an ICS
-          and drop it here. Your entered scores are kept separately and stay in
-          this browser.
-        </p>
+        <h2>{t('import.title')}</h2>
+        <p className="muted">{t('import.desc')}</p>
 
         <div
           className={`dropzone ${dragOver ? 'over' : ''}`}
@@ -63,9 +60,9 @@ export default function ImportView({
         >
           <div className="dropzone-icon">📅</div>
           <p>
-            <strong>Drag &amp; drop</strong> an .ics file here
+            <strong>{t('import.dropStrong')}</strong> {t('import.dropRest')}
           </p>
-          <p className="muted">or click to browse</p>
+          <p className="muted">{t('import.browse')}</p>
           <input
             ref={fileInput}
             type="file"
@@ -79,23 +76,23 @@ export default function ImportView({
 
         <div className="import-status">
           <div>
-            <span className="muted">Current calendar</span>
+            <span className="muted">{t('import.current')}</span>
             <strong>{calendarName}</strong>
-            <span className="muted">{matchCount} matches loaded</span>
+            <span className="muted">{t('import.loaded', { n: matchCount })}</span>
           </div>
           {customIcsName && (
-            <span className="custom-badge">Custom: {customIcsName}</span>
+            <span className="custom-badge">{t('import.custom', { name: customIcsName })}</span>
           )}
         </div>
 
         <div className="import-actions">
           {customIcsName && (
             <button className="btn ghost" onClick={onResetCalendar}>
-              Restore World Cup 2026 calendar
+              {t('import.restore')}
             </button>
           )}
           <button className="btn danger" onClick={onResetScores}>
-            Clear all scores
+            {t('import.clearScores')}
           </button>
         </div>
       </div>

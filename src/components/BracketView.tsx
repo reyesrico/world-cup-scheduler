@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { formatDateTime } from '../utils/format';
+import { formatDateTime, todayKey, isSameDay } from '../utils/format';
+import { useI18n } from '../i18n';
 import type { ResolvedMatch, ResolvedSide } from '../types';
 
 const ROUNDS = [
@@ -35,9 +36,10 @@ function BracketTeam({ team, score, isWinner }: BracketTeamProps) {
 interface BracketMatchProps {
   match: ResolvedMatch;
   timeZone: string;
+  locale: string;
 }
 
-function BracketMatch({ match, timeZone }: BracketMatchProps) {
+function BracketMatch({ match, timeZone, locale }: BracketMatchProps) {
   const sc = match.score;
   let homeWin = false;
   let awayWin = false;
@@ -49,7 +51,7 @@ function BracketMatch({ match, timeZone }: BracketMatchProps) {
       awayWin = sc.awayPen > sc.homePen;
     }
   }
-  const { date, time } = formatDateTime(match.start, timeZone);
+  const { date, time } = formatDateTime(match.start, timeZone, locale);
   const pens =
     sc && sc.home === sc.away && sc.homePen != null && sc.awayPen != null
       ? ` (${sc.homePen}-${sc.awayPen} pens)`
@@ -74,6 +76,7 @@ interface BracketViewProps {
 }
 
 export default function BracketView({ matches, timeZone, activeStage }: BracketViewProps) {
+  const { t, stage, locale } = useI18n();
   const thirdPlace = matches.find((m) => m.stage === 'Third Place');
 
   // Rounds that actually exist in this calendar, plus the third-place play-off.
@@ -82,11 +85,14 @@ export default function BracketView({ matches, timeZone, activeStage }: BracketV
     ...(thirdPlace ? [THIRD_PLACE] : []),
   ];
 
-  // On phones the bracket shows one round at a time via a selector. Default to
-  // the round currently in play; snap forward as stages complete (adjusting
-  // state during render is the React-recommended pattern).
+  // Prefer the round that has a match today; otherwise the round in play.
+  const tKey = todayKey(timeZone);
+  const todayStage = matches.find((m) => isSameDay(m.start, timeZone, tKey))?.stage;
   const initialRound =
-    navRounds.find((r) => r.key === activeStage)?.key ?? navRounds[0]?.key ?? 'Round of 32';
+    (todayStage && navRounds.find((r) => r.key === todayStage)?.key) ??
+    navRounds.find((r) => r.key === activeStage)?.key ??
+    navRounds[0]?.key ??
+    'Round of 32';
   const [selectedRound, setSelectedRound] = useState(initialRound);
   const [prevActiveStage, setPrevActiveStage] = useState(activeStage);
   if (activeStage !== prevActiveStage) {
@@ -133,12 +139,12 @@ export default function BracketView({ matches, timeZone, activeStage }: BracketV
               } ${isSelected ? 'is-selected' : ''}`}
             >
               <h4 className="bracket-col-title">
-                {round.label}
-                {isActive && <span className="now-badge">Now</span>}
+                {stage(round.key)}
+                {isActive && <span className="now-badge">{t('bracket.now')}</span>}
               </h4>
               <div className="bracket-col-matches">
                 {rms.map((m) => (
-                  <BracketMatch key={m.id} match={m} timeZone={timeZone} />
+                  <BracketMatch key={m.id} match={m} timeZone={timeZone} locale={locale} />
                 ))}
               </div>
             </div>
@@ -152,8 +158,8 @@ export default function BracketView({ matches, timeZone, activeStage }: BracketV
             selectedRound === THIRD_PLACE.key ? 'is-selected' : ''
           }`}
         >
-          <h4 className="bracket-col-title">Third Place Play-off</h4>
-          <BracketMatch match={thirdPlace} timeZone={timeZone} />
+          <h4 className="bracket-col-title">{t('bracket.thirdPlayoff')}</h4>
+          <BracketMatch match={thirdPlace} timeZone={timeZone} locale={locale} />
         </div>
       )}
     </div>
