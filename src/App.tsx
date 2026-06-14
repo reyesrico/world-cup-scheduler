@@ -17,6 +17,7 @@ import GroupsView from './components/GroupsView';
 import BracketView from './components/BracketView';
 import ImportView from './components/ImportView';
 import RefreshModal from './components/RefreshModal';
+import WelcomeModal from './components/WelcomeModal';
 import type { ParsedCalendar, ScoreEntry, ScoreMap, Tournament } from './types';
 import './App.css';
 
@@ -24,6 +25,30 @@ const DEFAULT_ICS_URL = `${import.meta.env.BASE_URL}worldcup_2026_all_matches.ic
 
 type Tab = 'Schedule' | 'Groups' | 'Bracket' | 'Import';
 const TABS: Tab[] = ['Schedule', 'Groups', 'Bracket', 'Import'];
+
+// First-run welcome + the user's choice about pulling real scores from the API.
+const WELCOME_KEY = 'wc_welcome_v1';
+const LIVE_KEY = 'wc_live_enabled_v1';
+
+function loadWelcomeSeen(): boolean {
+  try {
+    return localStorage.getItem(WELCOME_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+
+function loadLiveEnabled(): boolean {
+  try {
+    const v = localStorage.getItem(LIVE_KEY);
+    if (v === 'true') return true;
+    if (v === 'false') return false;
+  } catch {
+    /* ignore */
+  }
+  // Default on for anyone who used the app before the welcome existed.
+  return true;
+}
 
 // Turns a real (numeric) live score into the string-based ScoreEntry the rest
 // of the app uses, so a refreshed game looks exactly like a hand-typed one.
@@ -71,6 +96,9 @@ export default function App() {
   const [liveLoading, setLiveLoading] = useState(false);
   const [pendingLive, setPendingLive] = useState<LiveScoreMap | null>(null);
   const [toast, setToast] = useState('');
+  // First-run welcome and whether the user opted in to real-score fetching.
+  const [welcomeSeen, setWelcomeSeen] = useState<boolean>(() => loadWelcomeSeen());
+  const [liveEnabled, setLiveEnabled] = useState<boolean>(() => loadLiveEnabled());
   // Remembers the signature of a live snapshot the user already declined, so
   // we don't keep re-prompting with the same data on every focus.
   const dismissedSig = useRef('');
@@ -188,7 +216,7 @@ export default function App() {
   // confirmation modal. `auto` calls stay quiet (no toast, no re-prompt for an
   // already-declined snapshot); a manual click always gives feedback.
   const checkLive = async (auto: boolean) => {
-    if (!tournament || liveLoading) return;
+    if (!tournament || liveLoading || !liveEnabled) return;
     liveAbort.current?.abort();
     const ctrl = new AbortController();
     liveAbort.current = ctrl;
@@ -235,22 +263,39 @@ export default function App() {
     setPendingLive(null);
   };
 
+  // First-run welcome: store the language (already saved live) plus the
+  // real-score opt-in. When opted out we never call the live API.
+  const finishWelcome = (useLiveData: boolean) => {
+    // Persist the (possibly pre-selected) language so it sticks for next time.
+    setLang(lang);
+    setLiveEnabled(useLiveData);
+    try {
+      localStorage.setItem(LIVE_KEY, String(useLiveData));
+      localStorage.setItem(WELCOME_KEY, '1');
+    } catch {
+      /* ignore */
+    }
+    setWelcomeSeen(true);
+  };
+
   // Auto-check once the schedule is ready, then again whenever the tab regains
   // focus (people leave it open during matches). Manual refresh button too.
+  // Only runs after the welcome is dismissed and the user opted in.
   const tournamentReady = !!tournament;
   useEffect(() => {
-    if (!tournamentReady || autoChecked.current) return;
+    if (!tournamentReady || autoChecked.current || !liveEnabled || !welcomeSeen) return;
     autoChecked.current = true;
     void checkLive(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tournamentReady]);
+  }, [tournamentReady, liveEnabled, welcomeSeen]);
 
   useEffect(() => {
+    if (!liveEnabled || !welcomeSeen) return undefined;
     const onFocus = () => void checkLive(true);
     window.addEventListener('focus', onFocus);
     return () => window.removeEventListener('focus', onFocus);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tournamentReady, draftScores]);
+  }, [tournamentReady, draftScores, liveEnabled, welcomeSeen]);
 
   // Auto-dismiss the little status toast.
   useEffect(() => {
@@ -306,6 +351,7 @@ export default function App() {
             onClick={() => void checkLive(false)}
             disabled={liveLoading || !tournament}
             title={t('refresh.button')}
+            hidden={!liveEnabled}
           >
             <span className={`refresh-icon ${liveLoading ? 'spin' : ''}`}>↻</span>
             {liveLoading ? t('refresh.checking') : t('refresh.button')}
@@ -406,6 +452,10 @@ export default function App() {
           onUse={applyLive}
           onKeep={keepMine}
         />
+      )}
+
+      {!welcomeSeen && (
+        <WelcomeModal lang={lang} setLang={setLang} onFinish={finishWelcome} />
       )}
     </div>
   );

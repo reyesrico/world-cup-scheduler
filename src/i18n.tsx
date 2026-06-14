@@ -19,17 +19,42 @@ export const LANGS: { code: Lang; label: string; name: string }[] = [
 
 const LANG_KEY = 'wc_lang_v1';
 
-function loadLang(): Lang {
+// Spanish-speaking Latin American regions (plus Spain via the generic `es`).
+const LATAM_ES = new Set([
+  'AR', 'BO', 'CL', 'CO', 'CR', 'CU', 'DO', 'EC', 'SV', 'GT', 'GQ',
+  'HN', 'MX', 'NI', 'PA', 'PY', 'PE', 'PR', 'UY', 'VE',
+]);
+
+// Guess the best starting language from the browser's region / locale list:
+// Brazil or Portugal → Portuguese, Latin America (or Spain) → Spanish, else English.
+export function detectLang(): Lang {
   try {
-    const v = localStorage.getItem(LANG_KEY);
-    if (v === 'en' || v === 'es' || v === 'pt') return v;
-    // Fall back to the browser language when nothing is saved yet.
-    const nav = (navigator.language || 'en').slice(0, 2).toLowerCase();
-    if (nav === 'es' || nav === 'pt') return nav;
+    const list =
+      navigator.languages && navigator.languages.length
+        ? navigator.languages
+        : [navigator.language || 'en'];
+    for (const raw of list) {
+      const loc = raw.toLowerCase();
+      const lang = loc.slice(0, 2);
+      const region = loc.split('-')[1]?.toUpperCase();
+      if (lang === 'pt' || region === 'BR' || region === 'PT') return 'pt';
+      if (lang === 'es' || (region && LATAM_ES.has(region))) return 'es';
+    }
   } catch {
     /* ignore */
   }
   return 'en';
+}
+
+function loadLang(): Lang {
+  try {
+    const v = localStorage.getItem(LANG_KEY);
+    if (v === 'en' || v === 'es' || v === 'pt') return v;
+  } catch {
+    /* ignore */
+  }
+  // Nothing saved yet — fall back to a region-aware guess.
+  return detectLang();
 }
 
 type Dict = Record<string, string>;
@@ -111,6 +136,22 @@ const en: Dict = {
   'refresh.error': 'Could not reach the live scores service.',
   'refresh.applied': 'Updated {n} game(s) with real scores.',
 
+  'welcome.title': 'Welcome to the World Cup tracker',
+  'welcome.intro':
+    'Predict every match, follow the group tables and the knockout bracket, and — if you like — pull in the real results as they happen. Everything stays in this browser.',
+  'welcome.langQ': 'Choose your language',
+  'welcome.dataQ': 'Use real match results?',
+  'welcome.dataDesc':
+    'We can fetch official scores from a public feed and offer to fill in games that have already been played. You can always edit and save your own predictions instead.',
+  'welcome.dataYes': 'Yes, fetch real scores',
+  'welcome.dataNo': 'No, just my predictions',
+  'welcome.how.title': 'How it works',
+  'welcome.how.schedule': 'Schedule — tap any match to enter a score and emulate results.',
+  'welcome.how.groups': 'Groups — the standings update live as you fill in scores.',
+  'welcome.how.bracket': 'Bracket — the knockout rounds build from your group results.',
+  'welcome.how.save': 'Save scores — your predictions live in this browser; click Save to keep them.',
+  'welcome.start': 'Get started',
+
   'lang.label': 'Language',
 };
 
@@ -191,6 +232,22 @@ const es: Dict = {
   'refresh.error': 'No se pudo conectar con el servicio de marcadores en vivo.',
   'refresh.applied': 'Se actualizaron {n} partido(s) con marcadores reales.',
 
+  'welcome.title': 'Bienvenido al seguidor del Mundial',
+  'welcome.intro':
+    'Predice cada partido, sigue las tablas de los grupos y las eliminatorias y, si quieres, trae los resultados reales en tiempo real. Todo se queda en este navegador.',
+  'welcome.langQ': 'Elige tu idioma',
+  'welcome.dataQ': '¿Usar resultados reales?',
+  'welcome.dataDesc':
+    'Podemos obtener los marcadores oficiales de una fuente pública y ofrecerte rellenar los partidos ya jugados. Siempre puedes editar y guardar tus propias predicciones.',
+  'welcome.dataYes': 'Sí, traer marcadores reales',
+  'welcome.dataNo': 'No, solo mis predicciones',
+  'welcome.how.title': 'Cómo funciona',
+  'welcome.how.schedule': 'Calendario: toca cualquier partido para poner un marcador y emular resultados.',
+  'welcome.how.groups': 'Grupos: las tablas se actualizan al instante cuando pones los marcadores.',
+  'welcome.how.bracket': 'Eliminatorias: las rondas se arman con tus resultados de grupo.',
+  'welcome.how.save': 'Guardar marcadores: tus predicciones viven en este navegador; pulsa Guardar para conservarlas.',
+  'welcome.start': 'Empezar',
+
   'lang.label': 'Idioma',
 };
 
@@ -270,6 +327,22 @@ const pt: Dict = {
   'refresh.none': 'Nenhum resultado real novo no momento.',
   'refresh.error': 'Não foi possível acessar o serviço de placares ao vivo.',
   'refresh.applied': '{n} jogo(s) atualizado(s) com placares reais.',
+
+  'welcome.title': 'Bem-vindo ao acompanhador da Copa',
+  'welcome.intro':
+    'Preveja cada jogo, acompanhe as tabelas dos grupos e o mata-mata e, se quiser, traga os resultados reais em tempo real. Tudo fica neste navegador.',
+  'welcome.langQ': 'Escolha seu idioma',
+  'welcome.dataQ': 'Usar resultados reais?',
+  'welcome.dataDesc':
+    'Podemos buscar os placares oficiais de uma fonte pública e oferecer preencher os jogos já disputados. Você sempre pode editar e salvar suas próprias previsões.',
+  'welcome.dataYes': 'Sim, buscar placares reais',
+  'welcome.dataNo': 'Não, só minhas previsões',
+  'welcome.how.title': 'Como funciona',
+  'welcome.how.schedule': 'Calendário — toque em qualquer jogo para inserir um placar e emular resultados.',
+  'welcome.how.groups': 'Grupos — as tabelas se atualizam na hora conforme você preenche os placares.',
+  'welcome.how.bracket': 'Mata-mata — as fases se formam a partir dos seus resultados de grupo.',
+  'welcome.how.save': 'Salvar placares — suas previsões ficam neste navegador; clique em Salvar para mantê-las.',
+  'welcome.start': 'Começar',
 
   'lang.label': 'Idioma',
 };
