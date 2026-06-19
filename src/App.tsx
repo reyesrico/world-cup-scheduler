@@ -18,6 +18,7 @@ import BracketView from './components/BracketView';
 import ImportView from './components/ImportView';
 import RefreshModal from './components/RefreshModal';
 import WelcomeModal from './components/WelcomeModal';
+import FeedbackModal from './components/FeedbackModal';
 import type { ParsedCalendar, ScoreEntry, ScoreMap, Tournament } from './types';
 import './App.css';
 
@@ -49,6 +50,10 @@ function loadLiveEnabled(): boolean {
   // Default on for anyone who used the app before the welcome existed.
   return true;
 }
+
+// The feedback form only appears once a Web3Forms key is configured (injected
+// at build time), so end users never see a form that can't actually send.
+const FEEDBACK_ENABLED = !!import.meta.env.VITE_WEB3FORMS_KEY;
 
 // Turns a real (numeric) live score into the string-based ScoreEntry the rest
 // of the app uses, so a refreshed game looks exactly like a hand-typed one.
@@ -103,6 +108,13 @@ export default function App() {
     () => loadWelcomeSeen() || Object.keys(loadScores()).length > 0
   );
   const [liveEnabled, setLiveEnabled] = useState<boolean>(() => loadLiveEnabled());
+
+  // Bracket view: "projected" fills knockout slots from the current standings
+  // (provisional), vs only the mathematically-decided slots.
+  const [bracketProjected, setBracketProjected] = useState(true);
+
+  // Feedback modal.
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
   // Remembers the signature of a live snapshot the user already declined, so
   // we don't keep re-prompting with the same data on every focus.
   const dismissedSig = useRef('');
@@ -143,6 +155,13 @@ export default function App() {
   const tournament = useMemo<Tournament | null>(() => {
     if (!parsed) return null;
     return buildTournament(parsed.matches, draftScores);
+  }, [parsed, draftScores]);
+
+  // Provisional bracket: same scores, but knockout slots show the current
+  // group leaders/3rd-place candidates instead of waiting for groups to finish.
+  const projectedTournament = useMemo<Tournament | null>(() => {
+    if (!parsed) return null;
+    return buildTournament(parsed.matches, draftScores, { projected: true });
   }, [parsed, draftScores]);
 
   const hasUnsavedChanges = useMemo(
@@ -410,9 +429,13 @@ export default function App() {
 
         {tournament && tab === 'Bracket' && (
           <BracketView
-            matches={tournament.resolved}
+            matches={
+              (bracketProjected && projectedTournament ? projectedTournament : tournament).resolved
+            }
             timeZone={tz}
             activeStage={activeStage}
+            projected={bracketProjected}
+            onProjectedChange={setBracketProjected}
           />
         )}
 
@@ -433,6 +456,11 @@ export default function App() {
           {tz === 'UTC' ? t('footer.times.utc') : t('footer.times.local', { tz: localTz })}
           {hasUnsavedChanges ? t('footer.unsaved') : t('footer.saved')}
         </span>
+        {FEEDBACK_ENABLED && (
+          <button className="feedback-link" onClick={() => setFeedbackOpen(true)}>
+            {t('feedback.button')}
+          </button>
+        )}
       </footer>
 
       {hasUnsavedChanges && (
@@ -461,6 +489,8 @@ export default function App() {
       {!welcomeSeen && (
         <WelcomeModal lang={lang} setLang={setLang} onFinish={finishWelcome} />
       )}
+
+      {feedbackOpen && <FeedbackModal onClose={() => setFeedbackOpen(false)} />}
     </div>
   );
 }

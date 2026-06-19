@@ -20,14 +20,34 @@ interface BracketTeamProps {
 }
 
 function BracketTeam({ team, score, isWinner }: BracketTeamProps) {
+  if (team?.candidates && team.candidates.length > 0) {
+    return (
+      <div className="bracket-team candidates">
+        <ul className="bteam-candidates">
+          {team.candidates.map((c) => (
+            <li key={c.group}>
+              <span className="cand-flag">{c.flag || '⚽'}</span>
+              <span className="cand-group">{c.group}</span>
+              <span className="cand-name">{c.name}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    );
+  }
   return (
-    <div className={`bracket-team ${isWinner ? 'winner' : ''}`}>
+    <div
+      className={`bracket-team ${isWinner ? 'winner' : ''} ${team?.provisional ? 'provisional' : ''}`}
+    >
       <span className={`bteam-flag ${team?.decided ? '' : 'placeholder'}`}>
         {team?.flag || '⚽'}
       </span>
       <span className={`bteam-name ${team?.decided ? '' : 'placeholder'}`}>
         {team?.label || 'TBD'}
       </span>
+      {team?.slotLabel && (
+        <span className="bteam-slot">({team.slotLabel})</span>
+      )}
       <span className="bteam-score">{score == null ? '' : score}</span>
     </div>
   );
@@ -73,9 +93,17 @@ interface BracketViewProps {
   matches: ResolvedMatch[];
   timeZone: string;
   activeStage: string;
+  projected: boolean;
+  onProjectedChange: (projected: boolean) => void;
 }
 
-export default function BracketView({ matches, timeZone, activeStage }: BracketViewProps) {
+export default function BracketView({
+  matches,
+  timeZone,
+  activeStage,
+  projected,
+  onProjectedChange,
+}: BracketViewProps) {
   const { t, stage, locale } = useI18n();
   const thirdPlace = matches.find((m) => m.stage === 'Third Place');
 
@@ -102,6 +130,24 @@ export default function BracketView({ matches, timeZone, activeStage }: BracketV
 
   return (
     <div className="bracket-wrap">
+      <div className="bracket-toolbar">
+        <div className="bracket-mode" role="group" aria-label={t('bracket.modeProjected')}>
+          <button
+            className={projected ? 'active' : ''}
+            onClick={() => onProjectedChange(true)}
+          >
+            {t('bracket.modeProjected')}
+          </button>
+          <button
+            className={!projected ? 'active' : ''}
+            onClick={() => onProjectedChange(false)}
+          >
+            {t('bracket.modeConfirmed')}
+          </button>
+        </div>
+        {projected && <span className="bracket-note">{t('bracket.projectedNote')}</span>}
+      </div>
+
       {/* Mobile-only round selector */}
       <div className="bracket-rounds-nav" role="tablist" aria-label="Bracket round">
         {navRounds.map((r) => {

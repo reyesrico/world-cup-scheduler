@@ -13,6 +13,7 @@ import type {
   ScoreMap,
   Side,
   TeamStanding,
+  ThirdCandidate,
   Tournament,
 } from '../types';
 
@@ -184,7 +185,12 @@ function assignThirds(
   return result;
 }
 
-export function buildTournament(matches: Match[], scores: ScoreMap): Tournament {
+export function buildTournament(
+  matches: Match[],
+  scores: ScoreMap,
+  opts: { projected?: boolean } = {}
+): Tournament {
+  const projected = opts.projected ?? false;
   const flagReg = buildFlagRegistry(matches);
 
   // --- Group tables ---
@@ -249,6 +255,11 @@ export function buildTournament(matches: Match[], scores: ScoreMap): Tournament 
         loser = home;
       }
     }
+    // If either side is a current-standings projection, the outcome is too.
+    if (home.provisional || away.provisional) {
+      winner = { ...winner, provisional: true };
+      loser = { ...loser, provisional: true };
+    }
     return { winner, loser };
   }
 
@@ -268,17 +279,52 @@ export function buildTournament(matches: Match[], scores: ScoreMap): Tournament 
       if (g && g.allPlayed && g.table[idx]) {
         const t = g.table[idx];
         res = { name: t.name, flag: t.flag || flagReg[t.name] || '', label: t.name, decided: true };
+      } else if (projected && g && g.table[idx]) {
+        // Provisional: the team currently in this position, even mid-group.
+        const t = g.table[idx];
+        res = {
+          name: t.name,
+          flag: t.flag || flagReg[t.name] || '',
+          label: t.name,
+          decided: true,
+          provisional: true,
+          slotLabel: slot.label,
+        };
       } else {
         res = { name: slot.label, flag: slot.flag, label: slot.label, decided: false };
       }
     } else if (slot.kind === 'thirdPlace') {
-      res = { name: slot.label, flag: slot.flag, label: slot.label, decided: false };
-      // Filled later via the global thirds assignment.
+      if (projected) {
+        // Show the current 3rd-placed team of each candidate group.
+        const cands: ThirdCandidate[] = (slot.groups ?? [])
+          .map((gl) => {
+            const t = groups[gl]?.table[2];
+            return t ? { group: gl, name: t.name, flag: t.flag || flagReg[t.name] || '' } : null;
+          })
+          .filter((x): x is ThirdCandidate => x !== null);
+        res = {
+          name: slot.label,
+          flag: slot.flag,
+          label: slot.label,
+          decided: false,
+          provisional: true,
+          candidates: cands,
+        };
+      } else {
+        res = { name: slot.label, flag: slot.flag, label: slot.label, decided: false };
+      }
+      // Filled later (single team) via the global thirds assignment when decided.
     } else if (slot.kind === 'winnerMatch' || slot.kind === 'loserMatch') {
       const outcome = slot.match != null ? matchOutcome(slot.match) : null;
       if (outcome) {
         const t = slot.kind === 'winnerMatch' ? outcome.winner : outcome.loser;
-        res = { name: t.name, flag: t.flag || flagReg[t.name] || '', label: t.name, decided: true };
+        res = {
+          name: t.name,
+          flag: t.flag || flagReg[t.name] || '',
+          label: t.name,
+          decided: true,
+          provisional: t.provisional,
+        };
       } else {
         res = { name: slot.label, flag: slot.flag, label: slot.label, decided: false };
       }
@@ -341,6 +387,7 @@ export function buildTournament(matches: Match[], scores: ScoreMap): Tournament 
               flag: t.flag || flagReg[t.name] || '',
               label: t.name,
               decided: true,
+              provisional: t.provisional,
             };
             changed = true;
           }

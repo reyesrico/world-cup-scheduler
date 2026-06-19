@@ -110,6 +110,7 @@ const en: Dict = {
   'sched.today': 'Today',
   'sched.jumpToday': 'Jump to today',
   'sched.noToday': 'No matches today',
+  'sched.scrollTop': 'Scroll to top',
 
   'match.penalties': 'Penalties',
 
@@ -163,6 +164,25 @@ const en: Dict = {
   'welcome.how.save': 'Save scores — your predictions live in this browser; click Save to keep them.',
   'welcome.start': 'Get started',
 
+  'bracket.modeProjected': 'Projected',
+  'bracket.modeConfirmed': 'As played',
+  'bracket.projectedNote':
+    'Provisional bracket from the current standings — slots show who leads each group so far; 3rd-place spots list the current candidates.',
+
+  'feedback.button': 'Feedback',
+  'feedback.title': 'Send feedback',
+  'feedback.desc': 'Found a bug or have an idea? Let me know — it goes straight to my inbox.',
+  'feedback.message': 'Your feedback',
+  'feedback.placeholder': 'What works, what doesn’t, what you’d love to see…',
+  'feedback.contact': 'Email (optional)',
+  'feedback.contactPlaceholder': 'So I can reply',
+  'feedback.send': 'Send',
+  'feedback.sending': 'Sending…',
+  'feedback.cancel': 'Cancel',
+  'feedback.close': 'Close',
+  'feedback.thanks': 'Thanks! Your feedback was sent.',
+  'feedback.error': 'Could not send right now. Please try again later.',
+
   'lang.label': 'Language',
 };
 
@@ -206,6 +226,7 @@ const es: Dict = {
   'sched.today': 'Hoy',
   'sched.jumpToday': 'Ir a hoy',
   'sched.noToday': 'No hay partidos hoy',
+  'sched.scrollTop': 'Ir arriba',
 
   'match.penalties': 'Penales',
 
@@ -259,6 +280,25 @@ const es: Dict = {
   'welcome.how.save': 'Guardar marcadores: tus predicciones viven en este navegador; pulsa Guardar para conservarlas.',
   'welcome.start': 'Empezar',
 
+  'bracket.modeProjected': 'Proyectado',
+  'bracket.modeConfirmed': 'Como va',
+  'bracket.projectedNote':
+    'Cuadro provisional según la clasificación actual: las posiciones muestran quién va primero en cada grupo por ahora; los puestos de 3.º listan los candidatos actuales.',
+
+  'feedback.button': 'Comentarios',
+  'feedback.title': 'Enviar comentarios',
+  'feedback.desc': '¿Encontraste un error o tienes una idea? Cuéntame: llega directo a mi correo.',
+  'feedback.message': 'Tus comentarios',
+  'feedback.placeholder': 'Qué funciona, qué no, qué te gustaría ver…',
+  'feedback.contact': 'Correo (opcional)',
+  'feedback.contactPlaceholder': 'Para poder responderte',
+  'feedback.send': 'Enviar',
+  'feedback.sending': 'Enviando…',
+  'feedback.cancel': 'Cancelar',
+  'feedback.close': 'Cerrar',
+  'feedback.thanks': '¡Gracias! Tus comentarios se enviaron.',
+  'feedback.error': 'No se pudo enviar ahora. Inténtalo más tarde.',
+
   'lang.label': 'Idioma',
 };
 
@@ -302,6 +342,7 @@ const pt: Dict = {
   'sched.today': 'Hoje',
   'sched.jumpToday': 'Ir para hoje',
   'sched.noToday': 'Nenhum jogo hoje',
+  'sched.scrollTop': 'Ir ao topo',
 
   'match.penalties': 'Pênaltis',
 
@@ -355,6 +396,25 @@ const pt: Dict = {
   'welcome.how.save': 'Salvar placares — suas previsões ficam neste navegador; clique em Salvar para mantê-las.',
   'welcome.start': 'Começar',
 
+  'bracket.modeProjected': 'Projetado',
+  'bracket.modeConfirmed': 'Como está',
+  'bracket.projectedNote':
+    'Chave provisória com base na classificação atual — as vagas mostram quem lidera cada grupo até agora; as vagas de 3.º listam os candidatos atuais.',
+
+  'feedback.button': 'Feedback',
+  'feedback.title': 'Enviar feedback',
+  'feedback.desc': 'Achou um erro ou tem uma ideia? Me conte — vai direto para o meu e-mail.',
+  'feedback.message': 'Seu feedback',
+  'feedback.placeholder': 'O que funciona, o que não, o que você gostaria de ver…',
+  'feedback.contact': 'E-mail (opcional)',
+  'feedback.contactPlaceholder': 'Para eu poder responder',
+  'feedback.send': 'Enviar',
+  'feedback.sending': 'Enviando…',
+  'feedback.cancel': 'Cancelar',
+  'feedback.close': 'Fechar',
+  'feedback.thanks': 'Obrigado! Seu feedback foi enviado.',
+  'feedback.error': 'Não foi possível enviar agora. Tente mais tarde.',
+
   'lang.label': 'Idioma',
 };
 
@@ -399,6 +459,7 @@ const fr: Dict = {
   'sched.today': 'Aujourd’hui',
   'sched.jumpToday': 'Aller à aujourd’hui',
   'sched.noToday': 'Aucun match aujourd’hui',
+  'sched.scrollTop': 'Remonter en haut',
 
   'match.penalties': 'Tirs au but',
 
@@ -453,6 +514,25 @@ const fr: Dict = {
   'welcome.how.save':
     'Enregistrer les scores — vos pronostics restent dans ce navigateur ; cliquez sur Enregistrer pour les conserver.',
   'welcome.start': 'Commencer',
+
+  'bracket.modeProjected': 'Projeté',
+  'bracket.modeConfirmed': 'Réel',
+  'bracket.projectedNote':
+    'Tableau provisoire selon le classement actuel — les places montrent qui mène chaque groupe pour l’instant ; les places de 3e listent les candidats actuels.',
+
+  'feedback.button': 'Commentaires',
+  'feedback.title': 'Envoyer un commentaire',
+  'feedback.desc': 'Un bug ou une idée ? Dites-le-moi — ça arrive directement dans ma boîte mail.',
+  'feedback.message': 'Votre commentaire',
+  'feedback.placeholder': 'Ce qui marche, ce qui ne marche pas, ce que vous aimeriez voir…',
+  'feedback.contact': 'E-mail (facultatif)',
+  'feedback.contactPlaceholder': 'Pour que je puisse répondre',
+  'feedback.send': 'Envoyer',
+  'feedback.sending': 'Envoi…',
+  'feedback.cancel': 'Annuler',
+  'feedback.close': 'Fermer',
+  'feedback.thanks': 'Merci ! Votre commentaire a été envoyé.',
+  'feedback.error': 'Envoi impossible pour le moment. Réessayez plus tard.',
 
   'lang.label': 'Langue',
 };

@@ -173,8 +173,25 @@ export default function ScheduleView({
             className={`day-section ${isTodaySection ? 'is-today' : ''}`}
           >
             <h3 className="day-heading">
-              {isTodaySection && <span className="today-tag">{t('sched.today')}</span>}
-              {formatDayHeading(dayMatches[0].start, timeZone, locale)}
+              <span className="day-heading-main">
+                {isTodaySection && (
+                  <>
+                    <span className="today-tag">{t('sched.today')}</span>
+                    <button
+                      type="button"
+                      className="scroll-top-btn"
+                      onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                      title={t('sched.scrollTop')}
+                      aria-label={t('sched.scrollTop')}
+                    >
+                      ↑
+                    </button>
+                  </>
+                )}
+                <span className="day-date">
+                  {formatDayHeading(dayMatches[0].start, timeZone, locale)}
+                </span>
+              </span>
               <span className="day-count">{t('sched.matches', { n: dayMatches.length })}</span>
             </h3>
             <div className="match-grid">

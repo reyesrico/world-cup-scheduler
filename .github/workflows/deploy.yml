@@ -34,6 +34,14 @@ jobs:
 
       - name: Build
         run: npm run build
+        env:
+          # Web3Forms access key for the feedback form. Store it as a repo SECRET:
+          # Settings → Secrets and variables → Actions → Secrets → New secret
+          #   Name: WEB3FORMS_KEY   Value: <your Web3Forms access key>
+          # Keeping it in a secret keeps it out of the source and the CI logs.
+          # (Vite still inlines it into the built bundle, which is fine — the key
+          # only submits to your form and never exposes your email address.)
+          VITE_WEB3FORMS_KEY: ${{ secrets.WEB3FORMS_KEY }}
 
       - name: Setup Pages
         uses: actions/configure-pages@v5

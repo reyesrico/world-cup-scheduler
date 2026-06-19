@@ -64,11 +64,23 @@ export interface Score {
   awayPen: number | null;
 }
 
+export interface ThirdCandidate {
+  group: string;
+  name: string;
+  flag: string;
+}
+
 export interface ResolvedSide {
   name: string;
   flag: string;
   label: string;
   decided: boolean;
+  /** True when this side is a current-standings projection, not yet locked. */
+  provisional?: boolean;
+  /** The slot descriptor (e.g. "Winner Group A") for a provisional group slot. */
+  slotLabel?: string;
+  /** For third-place slots in projected mode: current 3rd-placed candidates. */
+  candidates?: ThirdCandidate[];
 }
 
 export interface ResolvedMatch extends Match {
