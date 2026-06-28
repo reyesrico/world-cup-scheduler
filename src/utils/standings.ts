@@ -16,6 +16,10 @@ import type {
   ThirdCandidate,
   Tournament,
 } from '../types';
+import {
+  THIRD_PLACE_ALLOCATION,
+  THIRD_PLACE_WINNER_ORDER,
+} from '../data/thirdPlaceAllocation';
 
 // Linear stage progression used to decide which stage is "current".
 const PROGRESSION = [
@@ -150,10 +154,48 @@ interface ThirdSlot {
   matchId: number;
   side: Side;
   groups: string[];
+  /** Group letter of the winner facing this third-place team (opposite side). */
+  winnerGroup?: string;
+}
+
+// Official FIFA allocation: looks up the predetermined Annex C table (495
+// combinations) keyed by the set of eight qualifying third-place groups, and
+// assigns each third to the winner-group slot the table dictates. Returns null
+// if the combination is missing (caller falls back to a valid matching).
+function assignThirdsOfficial(
+  slots: ThirdSlot[],
+  thirds: QualifiedThird[]
+): Record<string, QualifiedThird> | null {
+  const key = thirds
+    .map((t) => t.group)
+    .sort()
+    .join('');
+  const value = THIRD_PLACE_ALLOCATION[key];
+  if (!value || value.length !== THIRD_PLACE_WINNER_ORDER.length) return null;
+
+  // winnerGroup -> the third-place group that plays that winner.
+  const winnerToThirdGroup: Record<string, string> = {};
+  THIRD_PLACE_WINNER_ORDER.forEach((winnerGroup, i) => {
+    winnerToThirdGroup[winnerGroup] = value[i];
+  });
+
+  const thirdByGroup: Record<string, QualifiedThird> = {};
+  for (const t of thirds) thirdByGroup[t.group] = t;
+
+  const result: Record<string, QualifiedThird> = {};
+  for (const slot of slots) {
+    if (!slot.winnerGroup) return null;
+    const thirdGroup = winnerToThirdGroup[slot.winnerGroup];
+    const team = thirdGroup ? thirdByGroup[thirdGroup] : undefined;
+    if (!team) return null;
+    result[`${slot.matchId}:${slot.side}`] = team;
+  }
+  return result;
 }
 
 // Greedy/backtracking assignment of qualified third-placed teams to the
 // R32 slots that accept them (each slot lists the groups it may draw from).
+// Used only as a fallback when the official combination is unavailable.
 function assignThirds(
   slots: ThirdSlot[],
   thirds: QualifiedThird[]
@@ -347,11 +389,23 @@ export function buildTournament(
     const slots: ThirdSlot[] = [];
     for (const m of matches) {
       for (const side of ['home', 'away'] as const) {
-        if (m[side].kind === 'thirdPlace')
-          slots.push({ matchId: m.id, side, groups: m[side].groups ?? [] });
+        if (m[side].kind === 'thirdPlace') {
+          const otherSide: Side = side === 'home' ? 'away' : 'home';
+          const opp = m[otherSide];
+          slots.push({
+            matchId: m.id,
+            side,
+            groups: m[side].groups ?? [],
+            winnerGroup: opp.kind === 'winnerGroup' ? opp.group : undefined,
+          });
+        }
       }
     }
-    const assigned = assignThirds(slots, qualifiedThirds);
+    // Prefer the official FIFA Annex C allocation; fall back to a valid
+    // matching only if this combination isn't in the table.
+    const assigned =
+      assignThirdsOfficial(slots, qualifiedThirds) ??
+      assignThirds(slots, qualifiedThirds);
     for (const m of matches) {
       for (const side of ['home', 'away'] as const) {
         if (m[side].kind === 'thirdPlace') {
