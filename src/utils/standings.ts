@@ -247,16 +247,20 @@ export function buildTournament(
 
   const allGroupsDecided = groupLetters.every((g) => groups[g].allPlayed);
 
-  // --- Best third-placed teams (only meaningful once all groups decided) ---
+  // --- Best third-placed teams ---
+  // Final once all groups are decided; in projected mode we also rank the
+  // current 3rd-placed teams so the bracket can show a live best-guess.
   let qualifiedThirds: QualifiedThird[] = [];
-  if (allGroupsDecided) {
+  if (allGroupsDecided || projected) {
     const thirds: QualifiedThird[] = [];
     for (const g of groupLetters) {
       const t = groups[g].table[2];
       if (t) thirds.push({ ...t, group: g });
     }
-    thirds.sort(sortTeams);
-    qualifiedThirds = thirds.slice(0, 8);
+    if (thirds.length >= 8) {
+      thirds.sort(sortTeams);
+      qualifiedThirds = thirds.slice(0, 8);
+    }
   }
 
   // --- Resolve every match's two sides ---
@@ -384,8 +388,9 @@ export function buildTournament(
     resolveSide(m, 'away');
   }
 
-  // Assign thirds to their R32 slots.
-  if (allGroupsDecided && qualifiedThirds.length === 8) {
+  // Assign thirds to their R32 slots. Final once every group is decided; in
+  // projected mode this is a live best-guess from the current standings.
+  if ((allGroupsDecided || projected) && qualifiedThirds.length === 8) {
     const slots: ThirdSlot[] = [];
     for (const m of matches) {
       for (const side of ['home', 'away'] as const) {
@@ -416,6 +421,8 @@ export function buildTournament(
               flag: t.flag || flagReg[t.name] || '',
               label: t.name,
               decided: true,
+              provisional: !allGroupsDecided,
+              slotLabel: !allGroupsDecided ? `3rd Group ${t.group}` : undefined,
             };
           }
         }
