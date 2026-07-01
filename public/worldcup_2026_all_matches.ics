@@ -799,29 +799,29 @@ LOCATION:Arrowhead Stadium, Kansas City
 DESCRIPTION:FIFA World Cup 2026\nStage: Round of 32\nVenue: Arrowhead Stadium, Kansas City
 END:VEVENT
 BEGIN:VEVENT
-UID:match_2026_88_Winner_Match_73_vs_Winner_Match_75_client@worldcupcalendar.football
+UID:match_2026_88_Winner_Match_75_vs_Winner_Match_78_client@worldcupcalendar.football
 DTSTAMP:20260613T212352Z
 DTSTART:20260704T170000Z
 DTEND:20260704T190000Z
-SUMMARY:⚽ Winner Match 73 vs ⚽ Winner Match 75
+SUMMARY:⚽ Winner Match 75 vs ⚽ Winner Match 78
 LOCATION:NRG Stadium, Houston
 DESCRIPTION:FIFA World Cup 2026\nStage: Round of 16\nVenue: NRG Stadium, Houston
 END:VEVENT
 BEGIN:VEVENT
-UID:match_2026_89_Winner_Match_74_vs_Winner_Match_77_client@worldcupcalendar.football
+UID:match_2026_89_Winner_Match_73_vs_Winner_Match_76_client@worldcupcalendar.football
 DTSTAMP:20260613T212352Z
 DTSTART:20260704T210000Z
 DTEND:20260704T230000Z
-SUMMARY:⚽ Winner Match 74 vs ⚽ Winner Match 77
+SUMMARY:⚽ Winner Match 73 vs ⚽ Winner Match 76
 LOCATION:Lincoln Financial Field, Philadelphia
 DESCRIPTION:FIFA World Cup 2026\nStage: Round of 16\nVenue: Lincoln Financial Field, Philadelphia
 END:VEVENT
 BEGIN:VEVENT
-UID:match_2026_90_Winner_Match_76_vs_Winner_Match_78_client@worldcupcalendar.football
+UID:match_2026_90_Winner_Match_74_vs_Winner_Match_77_client@worldcupcalendar.football
 DTSTAMP:20260613T212352Z
 DTSTART:20260705T200000Z
 DTEND:20260705T220000Z
-SUMMARY:⚽ Winner Match 76 vs ⚽ Winner Match 78
+SUMMARY:⚽ Winner Match 74 vs ⚽ Winner Match 77
 LOCATION:MetLife Stadium, East Rutherford
 DESCRIPTION:FIFA World Cup 2026\nStage: Round of 16\nVenue: MetLife Stadium, East Rutherford
 END:VEVENT
@@ -853,20 +853,20 @@ LOCATION:Lumen Field, Seattle
 DESCRIPTION:FIFA World Cup 2026\nStage: Round of 16\nVenue: Lumen Field, Seattle
 END:VEVENT
 BEGIN:VEVENT
-UID:match_2026_94_Winner_Match_86_vs_Winner_Match_88_client@worldcupcalendar.football
+UID:match_2026_94_Winner_Match_86_vs_Winner_Match_87_client@worldcupcalendar.football
 DTSTAMP:20260613T212352Z
 DTSTART:20260707T160000Z
 DTEND:20260707T180000Z
-SUMMARY:⚽ Winner Match 86 vs ⚽ Winner Match 88
+SUMMARY:⚽ Winner Match 86 vs ⚽ Winner Match 87
 LOCATION:Mercedes-Benz Stadium, Atlanta
 DESCRIPTION:FIFA World Cup 2026\nStage: Round of 16\nVenue: Mercedes-Benz Stadium, Atlanta
 END:VEVENT
 BEGIN:VEVENT
-UID:match_2026_95_Winner_Match_85_vs_Winner_Match_87_client@worldcupcalendar.football
+UID:match_2026_95_Winner_Match_85_vs_Winner_Match_88_client@worldcupcalendar.football
 DTSTAMP:20260613T212352Z
 DTSTART:20260707T200000Z
 DTEND:20260707T220000Z
-SUMMARY:⚽ Winner Match 85 vs ⚽ Winner Match 87
+SUMMARY:⚽ Winner Match 85 vs ⚽ Winner Match 88
 LOCATION:BC Place, Vancouver
 DESCRIPTION:FIFA World Cup 2026\nStage: Round of 16\nVenue: BC Place, Vancouver
 END:VEVENT
